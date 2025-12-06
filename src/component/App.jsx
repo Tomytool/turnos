@@ -18,7 +18,7 @@ export const App = () => {
 
   return (
     <div className="min-h-screen bg-bg-dark text-bg-light p-5 font-sans">
-      <h1>Turnos Sedes</h1>
+      <h1 className="text-2xl font-bold">Registro de Turnos (Sede)</h1>
       <Table data={data} />
     </div>
   );

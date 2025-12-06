@@ -148,7 +148,7 @@ export const Table = ({ data }) => {
           }}
           className="block w-full rounded-lg border border-gray-700 bg-gray-800 p-2.5 text-sm text-white focus:border-primary focus:ring-primary sm:w-auto"
         >
-          <option value="">Filtrar por Sede</option>
+          <option value="">Buscar por Sede</option>
           {uniqueSedes.map((sede) => (
             <option key={sede} value={sede}>
               {sede}
@@ -181,7 +181,7 @@ export const Table = ({ data }) => {
           }}
           className="block w-full rounded-lg border border-gray-700 bg-gray-800 p-2.5 text-sm text-white focus:border-primary focus:ring-primary sm:w-auto"
         >
-          <option value="">Filtrar por Nombre</option>
+          <option value="">Buscar por Nombre</option>
           {uniqueNombres.map((nombre) => (
             <option key={nombre} value={nombre}>
               {nombre}
@@ -229,7 +229,7 @@ export const Table = ({ data }) => {
             {table.getRowModel().rows.map((row) => (
               <tr
                 key={row.id}
-                className="border-b border-gray-700 bg-bg-dark hover:bg-gray-800"
+                className="border-b border-gray-700 bg-bg-dark hover:bg-gray-800 hover:text-white"
               >
                 {row.getVisibleCells().map((cell) => (
                   <td key={cell.id} className="px-6 py-4">
@@ -263,7 +263,7 @@ export const Table = ({ data }) => {
         <button
           onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
-          className="rounded-lg border border-gray-700 bg-gray-800 px-3 py-3 text-sm font-medium text-gray-300 hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-lg border border-gray-700 bg-gray-800 px-3 py-3 mb-2 text-sm font-medium text-gray-300 hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {">"}
         </button>
