@@ -17,7 +17,7 @@ export const App = () => {
     );
 
   return (
-    <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
+    <div className="min-h-screen bg-bg-dark text-bg-light p-5 font-sans">
       <h1>Turnos Sedes</h1>
       <Table data={data} />
     </div>

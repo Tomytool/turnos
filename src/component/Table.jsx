@@ -55,11 +55,38 @@ export const Table = ({ data }) => {
     );
   }, [data, globalFilter, allowedKeys]);
 
+  // Extract unique sedes for the selector
+  const uniqueSedes = useMemo(() => {
+    if (!data || data.length === 0) return [];
+    const sedeKey = Object.keys(data[0]).find(
+      (k) => k.toLowerCase() === "sede"
+    );
+    if (!sedeKey) return [];
+    const unique = new Set();
+    data.forEach((row) => {
+      if (row[sedeKey]) unique.add(row[sedeKey]);
+    });
+    return Array.from(unique).sort();
+  }, [data]);
+
+  // Extract unique nombres for the selector
+  const uniqueNombres = useMemo(() => {
+    if (!data || data.length === 0) return [];
+    const nombreKey = Object.keys(data[0]).find(
+      (k) => k.toLowerCase() === "nombre"
+    );
+    if (!nombreKey) return [];
+    const unique = new Set();
+    data.forEach((row) => {
+      if (row[nombreKey]) unique.add(row[nombreKey]);
+    });
+    return Array.from(unique).sort();
+  }, [data]);
+
   const table = useReactTable({
     data: filteredData,
     columns,
     state: {
-      // globalFilter handled outside to exclude certain keys (rut/dv)
       columnFilters,
       sorting,
     },
@@ -67,8 +94,8 @@ export const Table = ({ data }) => {
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    // We apply global filtering before the table to exclude 'rut' and 'dv'
     getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
     initialState: {
       pagination: {
@@ -86,19 +113,86 @@ export const Table = ({ data }) => {
   }
 
   return (
-    <div className="flex flex-col gap-4 p-4">
+    <div className="flex flex-col gap-4 p-4 text-bg-light">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        {/* Global Search */}
         <input
           value={globalFilter ?? ""}
           onChange={(e) => setGlobalFilter(e.target.value)}
-          className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
-          placeholder="Buscar..."
+          className="block w-full rounded-lg border border-gray-700 bg-gray-800 p-2.5 text-sm text-white placeholder-gray-400 focus:border-primary focus:ring-primary"
+          placeholder="Buscar en la tabla..."
         />
+
+        {/* Sede Selector */}
+        <select
+          value={
+            columnFilters.find((f) => f.id.toLowerCase() === "sede")?.value ||
+            ""
+          }
+          onChange={(e) => {
+            const val = e.target.value;
+            const sedeKey =
+              Object.keys(data[0] || {}).find(
+                (k) => k.toLowerCase() === "sede"
+              ) || "sede";
+            if (val) {
+              setColumnFilters((old) => [
+                ...old.filter((f) => f.id.toLowerCase() !== "sede"),
+                { id: sedeKey, value: val },
+              ]);
+            } else {
+              setColumnFilters((old) =>
+                old.filter((f) => f.id.toLowerCase() !== "sede")
+              );
+            }
+          }}
+          className="block w-full rounded-lg border border-gray-700 bg-gray-800 p-2.5 text-sm text-white focus:border-primary focus:ring-primary sm:w-auto"
+        >
+          <option value="">Filtrar por Sede</option>
+          {uniqueSedes.map((sede) => (
+            <option key={sede} value={sede}>
+              {sede}
+            </option>
+          ))}
+        </select>
+
+        {/* Nombre Selector */}
+        <select
+          value={
+            columnFilters.find((f) => f.id.toLowerCase() === "nombre")?.value ||
+            ""
+          }
+          onChange={(e) => {
+            const val = e.target.value;
+            const nombreKey =
+              Object.keys(data[0] || {}).find(
+                (k) => k.toLowerCase() === "nombre"
+              ) || "nombre";
+            if (val) {
+              setColumnFilters((old) => [
+                ...old.filter((f) => f.id.toLowerCase() !== "nombre"),
+                { id: nombreKey, value: val },
+              ]);
+            } else {
+              setColumnFilters((old) =>
+                old.filter((f) => f.id.toLowerCase() !== "nombre")
+              );
+            }
+          }}
+          className="block w-full rounded-lg border border-gray-700 bg-gray-800 p-2.5 text-sm text-white focus:border-primary focus:ring-primary sm:w-auto"
+        >
+          <option value="">Filtrar por Nombre</option>
+          {uniqueNombres.map((nombre) => (
+            <option key={nombre} value={nombre}>
+              {nombre}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
-        <table className="w-full text-left text-sm text-gray-500">
-          <thead className="bg-gray-50 text-xs uppercase text-gray-700">
+        <table className="w-full text-left text-sm text-bg-light">
+          <thead className="bg-gray-800 text-xs uppercase text-gray-400 border-b border-gray-700">
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
@@ -106,7 +200,7 @@ export const Table = ({ data }) => {
                     key={header.id}
                     className={`px-6 py-3 ${
                       header.column.getCanSort()
-                        ? "cursor-pointer select-none hover:bg-gray-100"
+                        ? "cursor-pointer select-none hover:text-white"
                         : ""
                     }`}
                     onClick={header.column.getToggleSortingHandler()}
@@ -119,7 +213,7 @@ export const Table = ({ data }) => {
                             header.getContext()
                           )}
                       {header.column.getCanSort() && (
-                        <span className="text-gray-400">
+                        <span className="text-gray-500">
                           {header.column.getIsSorted() === "asc" && " ↑"}
                           {header.column.getIsSorted() === "desc" && " ↓"}
                           {!header.column.getIsSorted() && " ↕"}
@@ -133,7 +227,10 @@ export const Table = ({ data }) => {
           </thead>
           <tbody>
             {table.getRowModel().rows.map((row) => (
-              <tr key={row.id} className="border-b bg-white hover:bg-gray-50">
+              <tr
+                key={row.id}
+                className="border-b border-gray-700 bg-bg-dark hover:bg-gray-800"
+              >
                 {row.getVisibleCells().map((cell) => (
                   <td key={cell.id} className="px-6 py-4">
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -149,21 +246,24 @@ export const Table = ({ data }) => {
         <button
           onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
-          className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-500 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {"<"}
         </button>
         <span className="text-sm text-gray-700">
           Página{" "}
-          <span className="font-semibold">
+          <span className="font-semibold text-gray-700">
             {table.getState().pagination.pageIndex + 1}
           </span>{" "}
-          de <span className="font-semibold">{table.getPageCount()}</span>
+          de{" "}
+          <span className="font-semibold text-gray-700">
+            {table.getPageCount()}
+          </span>
         </span>
         <button
           onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
-          className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-500 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {">"}
         </button>
