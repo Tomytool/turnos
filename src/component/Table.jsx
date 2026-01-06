@@ -226,18 +226,51 @@ export const Table = ({ data }) => {
             ))}
           </thead>
           <tbody>
-            {table.getRowModel().rows.map((row) => (
-              <tr
-                key={row.id}
-                className="border-b border-gray-700 bg-bg-dark hover:bg-gray-800 hover:text-white"
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className="px-6 py-4">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
-              </tr>
-            ))}
+            {table.getRowModel().rows.map((row) => {
+              const data = row.original || {};
+              const cells = row.getVisibleCells();
+
+              // Check for missing data in any visible cell
+              const hasMissingData = cells.some((cell) => {
+                const val = cell.getValue();
+                return val === null || val === undefined || val === "";
+              });
+
+              const keys = Object.keys(data);
+              const inicioKey = keys.find((k) => {
+                const lower = k.toLowerCase();
+                return lower.includes("horario") && lower.includes("inicio");
+              });
+              const terminoKey = keys.find((k) => {
+                const lower = k.toLowerCase();
+                return lower.includes("horario") && lower.includes("termino");
+              });
+
+              const inicioVal = inicioKey ? String(data[inicioKey]) : "";
+              const terminoVal = terminoKey ? String(data[terminoKey]) : "";
+              const isRed =
+                hasMissingData ||
+                inicioVal.includes("-") ||
+                terminoVal.includes("-");
+
+              return (
+                <tr
+                  key={row.id}
+                  className={`border-b border-gray-700 ${
+                    isRed ? "bg-red-400" : "bg-bg-dark"
+                  } hover:bg-gray-800 hover:text-white`}
+                >
+                  {cells.map((cell) => (
+                    <td key={cell.id} className="px-6 py-4">
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </td>
+                  ))}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
